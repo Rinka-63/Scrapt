@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Private Access</title>
+  <style>
+    :root {
+      --bg-1: #f9f5f6;
+      --bg-2: #f2e9ea;
+      --paper: #f8f2ee;
+      --paper-2: #fffaf6;
+      --ink: #5c352e;
+      --ink-soft: #7e5b53;
+      --accent: #b86248;
+      --accent-soft: #d98e78;
+      --mint: #b8d8c7;
+      --mint-deep: #7ba090;
+      --rose: #e8a3ae;
+      --gold: #efbf43;
+      --line: rgba(184, 98, 72, 0.14);
+      --line-soft: rgba(123, 160, 144, 0.24);
+      --shadow: 0 24px 48px rgba(114, 79, 64, 0.14);
+      --key-shadow: 0 14px 24px rgba(114, 79, 64, 0.08);
+      --panel-w: min(980px, calc(100vw - 28px));
+      --page-pad: clamp(8px, 2vw, 24px);
+      --card-pad: clamp(14px, 2.2vw, 32px);
+      --gap: clamp(14px, 2vw, 26px);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: var(--page-pad);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 88%, rgba(239, 176, 190, 0.42), transparent 22%),
+        linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      overflow-x: hidden;
+    }
+
+    .bg-pattern {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.42;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23bcd9c8' stroke-width='3' opacity='0.55'%3E%3Cpath d='M30 26h14v14h14v14H44v14H30V54H16V40h14z'/%3E%3Cpath d='M110 38c0-10 8-18 18-18s18 8 18 18c0 24-36 42-36 42s-36-18-36-42c0-10 8-18 18-18 8 0 14 5 18 12 4-7 10-12 18-12z' transform='scale(.45) translate(170 20)'/%3E%3Cpath d='M42 128c0-12 10-22 22-22s22 10 22 22v12c0 16 12 28 28 28'/%3E%3Ccircle cx='126' cy='126' r='16'/%3E%3Cpath d='M126 142v16M118 158h16'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    .shell {
+      position: relative;
+      width: var(--panel-w);
+      border-radius: 34px;
+      padding: var(--card-pad);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255,255,255,0.9), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.48)),
+        var(--paper);
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(rgba(133, 93, 81, 0.08) 0.7px, transparent 0.7px),
+        radial-gradient(rgba(255,255,255,0.9) 0.7px, transparent 0.7px);
+      background-size: 16px 16px, 20px 20px;
+      background-position: 0 0, 8px 7px;
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .decor {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .dots,
+    .cross,
+    .heart,
+    .stethoscope,
+    .pill,
+    .medical-card {
+      position: absolute;
+    }
+
+    .dots {
+      right: 20px;
+      top: 20px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #a76d5c;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.56);
+    }
+
+    .cross {
+      right: 76px;
+      top: 22px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .cross::before,
+    .cross::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      background: var(--gold);
+      border-radius: 999px;
+    }
+
+    .cross::before { width: 6px; height: 28px; }
+    .cross::after { width: 28px; height: 6px; }
+
+    .heart {
+      left: 34px;
+      bottom: 28px;
+      width: 18px;
+      height: 18px;
+      background: var(--rose);
+      transform: rotate(-45deg);
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--rose);
+    }
+
+    .heart::before { top: -9px; left: 0; }
+    .heart::after { top: 0; left: 9px; }
+
+    .pill {
+      left: 80px;
+      bottom: 30px;
+      width: 44px;
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f0c8ce 0 50%, #fff5f0 50% 100%);
+      border: 2px solid rgba(184, 98, 72, 0.18);
+      transform: rotate(-24deg);
+    }
+
+    .medical-card {
+      right: 26px;
+      bottom: 24px;
+      width: 98px;
+      height: 64px;
+      border-radius: 20px;
+      border: 3px solid rgba(123, 160, 144, 0.38);
+      background: rgba(255,255,255,0.18);
+      opacity: 0.72;
+    }
+
+    .medical-card::before {
+      content: "";
+      position: absolute;
+      left: 34px;
+      top: -12px;
+      width: 30px;
+      height: 20px;
+      border: 3px solid rgba(184, 152, 142, 0.38);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      background: rgba(255,255,255,0.34);
+    }
+
+    .medical-card::after {
+      content: "";
+      position: absolute;
+      right: 8px;
+      bottom: 4px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 3px solid rgba(184, 152, 142, 0.38);
+      background: rgba(255,255,255,0.26);
+    }
+
+    .stethoscope {
+      right: 0;
+      bottom: 0;
+      width: 92px;
+      height: 74px;
+      opacity: 0.2;
+    }
+
+    .stethoscope::before {
+      content: "";
+      position: absolute;
+      left: 38px;
+      top: 6px;
+      width: 28px;
+      height: 48px;
+      border: 4px solid #b98f86;
+      border-top: none;
+      border-radius: 0 0 22px 22px;
+    }
+
+    .stethoscope::after {
+      content: "";
+      position: absolute;
+      right: 8px;
+      bottom: 14px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 4px solid #b98f86;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 620px);
+      margin: 0 auto;
+      display: grid;
+      gap: var(--gap);
+      align-items: start;
+    }
+
+    .right-panel {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .card {
+      border-radius: 28px;
+      background: rgba(255,255,255,0.64);
+      border: 1px solid rgba(255,255,255,0.82);
+      box-shadow: 0 18px 36px rgba(114, 79, 64, 0.1);
+    }
+
+    .mini-health {
+      padding: 18px 18px 16px;
+    }
+
+    .mini-health h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--mint-deep);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mini-health p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.94rem;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(184, 216, 199, 0.34);
+      color: #648273;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .top-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #9b664d;
+      font-size: 0.88rem;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2.2rem, 4.8vw, 4.5rem);
+      line-height: 0.96;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.7;
+      font-weight: 700;
+    }
+
+    .pin-section {
+      display: grid;
+      gap: 14px;
+      margin-top: 2px;
+      width: 100%;
+    }
+
+    .pin-label {
+      font-size: 0.94rem;
+      font-weight: 800;
+      color: #8d5c4e;
+    }
+
+    .pin-display {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pin-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: clamp(54px, 6vw, 68px);
+      border: 2px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.82);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+    }
+
+    .pin-input {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: transparent;
+      text-align: center;
+      font-size: clamp(1.12rem, 2.4vw, 1.5rem);
+      font-weight: 900;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .keypad-card {
+      padding: 16px;
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.56)),
+        var(--paper-2);
+      border: 1px solid rgba(255,255,255,0.84);
+      box-shadow: 0 18px 36px rgba(114, 79, 64, 0.1);
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .key {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-height: 66px;
+      border: 2px solid var(--line-soft);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 30% 24%, rgba(255,255,255,0.98), rgba(255,255,255,0.72) 48%, rgba(245,236,231,0.95) 100%);
+      color: var(--ink);
+      font-size: 1.22rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+      box-shadow: var(--key-shadow);
+    }
+
+    .key::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.56), transparent 48%),
+        radial-gradient(circle at 82% 82%, rgba(184,216,199,0.16), transparent 24%);
+      pointer-events: none;
+    }
+
+    .key .digit,
+    .key small {
+      position: relative;
+      z-index: 1;
+    }
+
+    .key .digit {
+      font-size: 1.26rem;
+      line-height: 1;
+    }
+
+    .key small {
+      display: block;
+      font-size: 0.58rem;
+      color: #8b695f;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .key:hover,
+    .key:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(123, 160, 144, 0.44);
+      box-shadow: 0 14px 22px rgba(114, 79, 64, 0.12);
+      outline: none;
+    }
+
+    .key.action {
+      background: linear-gradient(135deg, rgba(184,216,199,0.5), rgba(255,255,255,0.92));
+      color: #5d7b6b;
+    }
+
+    .key.submit {
+      background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+      border-color: transparent;
+      color: #fffdf9;
+    }
+
+    .key.submit small {
+      color: rgba(255,253,249,0.84);
+    }
+
+    .status-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .helper,
+    .error {
+      font-size: 0.92rem;
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
+    .helper { color: #8d665c; }
+    .error { min-height: 20px; color: #b0484d; }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 8px;
+      }
+
+      .shell {
+        padding: 14px;
+        border-radius: 24px;
+      }
+
+      .content {
+        gap: 14px;
+      }
+
+      .mini-health {
+        padding: 14px;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+        font-size: clamp(1.9rem, 9vw, 2.8rem);
+      }
+
+      .lead {
+        font-size: 0.92rem;
+        line-height: 1.6;
+      }
+
+      .pin-section {
+        gap: 12px;
+      }
+
+      .pin-display {
+        gap: 8px;
+      }
+
+      .pin-slot {
+        height: 52px;
+        border-radius: 16px;
+      }
+
+      .keypad-card {
+        padding: 10px;
+        border-radius: 22px;
+      }
+
+      .keypad-grid {
+        gap: 8px;
+      }
+
+      .key {
+        min-height: 56px;
+        border-radius: 18px;
+      }
+
+      .key .digit {
+        font-size: 1.08rem;
+      }
+
+      .cross {
+        right: 56px;
+        top: 16px;
+        transform: scale(0.82);
+      }
+
+      .dots {
+        right: 12px;
+        top: 14px;
+      }
+
+      .pill {
+        left: 62px;
+        bottom: 20px;
+        transform: rotate(-24deg) scale(0.86);
+      }
+
+      .heart {
+        left: 24px;
+        bottom: 18px;
+        transform: rotate(-45deg) scale(0.86);
+      }
+
+      .medical-card,
+      .stethoscope {
+        transform: scale(0.84);
+        transform-origin: bottom right;
+      }
+
+      .medical-card {
+        right: 12px;
+        bottom: 16px;
+      }
+
+      .stethoscope {
+        right: 0;
+        bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <main class="shell">
+    <div class="decor">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="cross"></div>
+      <div class="heart"></div>
+      <div class="pill"></div>
+      <div class="medical-card"></div>
+      <div class="stethoscope"></div>
+    </div>
+
+    <section class="content">
+      <section class="right-panel">
+        <div class="top-copy">
+          <p class="eyebrow">Private Scrapbook</p>
+          <h2>Tebak Tebakan dulu yuk</h2>
+          <p class="lead">
+            Gimana caranya perawat tetap terlihat "baik-baik saja" padahal di dalem hati pengen nangis gara-gara laporan asuhan keperawatan belum selesai?
+          </p>
+        </div>
+
+        <form id="pinForm" class="pin-section">
+          <label class="pin-label" for="digit-1">4 digit Jawaban</label>
+
+          <div class="pin-display">
+            <div class="pin-slot"><input class="pin-input" id="digit-1" type="password" inputmode="numeric" maxlength="1" /></div>
+            <div class="pin-slot"><input class="pin-input" type="password" inputmode="numeric" maxlength="1" /></div>
+            <div class="pin-slot"><input class="pin-input" type="password" inputmode="numeric" maxlength="1" /></div>
+            <div class="pin-slot"><input class="pin-input" type="password" inputmode="numeric" maxlength="1" /></div>
+          </div>
+
+          <div class="keypad-card">
+            <div class="keypad-grid">
+              <button class="key" type="button" data-key="1"><span class="digit">1</span><small>Care</small></button>
+              <button class="key" type="button" data-key="2"><span class="digit">2</span><small>Hope</small></button>
+              <button class="key" type="button" data-key="3"><span class="digit">3</span><small>Calm</small></button>
+              <button class="key" type="button" data-key="4"><span class="digit">4</span><small>Kind</small></button>
+              <button class="key" type="button" data-key="5"><span class="digit">5</span><small>Heal</small></button>
+              <button class="key" type="button" data-key="6"><span class="digit">6</span><small>Warm</small></button>
+              <button class="key" type="button" data-key="7"><span class="digit">7</span><small>Safe</small></button>
+              <button class="key" type="button" data-key="8"><span class="digit">8</span><small>Light</small></button>
+              <button class="key" type="button" data-key="9"><span class="digit">9</span><small>Heart</small></button>
+              <button class="key action" type="button" data-action="clear"><span class="digit">&#10005;</span><small>Clear</small></button>
+              <button class="key" type="button" data-key="0"><span class="digit">0</span><small>Rest</small></button>
+              <button class="key submit" type="submit"><span class="digit">&#10003;</span><small>Enter</small></button>
+            </div>
+          </div>
+
+          <div class="status-row">
+            <span class="helper">Clue = Tetap sok kind biar suasana calm, kasih senyum yang warm, padahal aslinya lagi butuh care</span>
+            <div class="error" id="errorText"></div>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const CORRECT_PIN = "4361";
+    const inputs = [...document.querySelectorAll(".pin-input")];
+    const form = document.getElementById("pinForm");
+    const errorText = document.getElementById("errorText");
+    const keys = [...document.querySelectorAll("[data-key]")];
+    const clearButton = document.querySelector("[data-action='clear']");
+
+    function firstEmptyIndex() {
+      return inputs.findIndex((input) => !input.value);
+    }
+
+    function focusIndex(index) {
+      if (inputs[index]) inputs[index].focus();
+    }
+
+    function resetInputs() {
+      inputs.forEach((input) => {
+        input.value = "";
+      });
+      focusIndex(0);
+    }
+
+    function appendDigit(digit) {
+      const emptyIndex = firstEmptyIndex();
+      if (emptyIndex === -1) return;
+      inputs[emptyIndex].value = digit;
+      focusIndex(Math.min(emptyIndex + 1, inputs.length - 1));
+    }
+
+    inputs.forEach((input, index) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "").slice(0, 1);
+        if (input.value && inputs[index + 1]) focusIndex(index + 1);
+      });
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Backspace") {
+          if (input.value) {
+            input.value = "";
+            return;
+          }
+          if (inputs[index - 1]) {
+            focusIndex(index - 1);
+            inputs[index - 1].value = "";
+          }
+        }
+      });
+    });
+
+    keys.forEach((button) => {
+      button.addEventListener("click", () => {
+        appendDigit(button.dataset.key);
+      });
+    });
+
+    clearButton.addEventListener("click", () => {
+      resetInputs();
+      errorText.textContent = "";
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const pin = inputs.map((input) => input.value).join("");
+
+      if (pin === CORRECT_PIN) {
+        window.location.href = "welcome.html";
+        return;
+      }
+
+      errorText.textContent = "PIN belum sesuai. Coba lagi ya.";
+      resetInputs();
+    });
+  </script>
+</body>
+</html>
